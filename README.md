@@ -10,7 +10,7 @@ es una empresa ficticia que no pertenece a ningún grupo.
 
 | Nombre | Usuario GitHub | Microservicio |
 |--------|----------------|---------------|
-| Zeida Solarte (docente) | @tu-usuario | todos |
+| Zeida Solarte (docente) | @zsolarte | todos |
 
 ## Microservicios
 
