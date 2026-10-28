@@ -46,3 +46,5 @@ Ejemplo de cuerpo para POST:
 `{"nombre": "Marta Ríos", "email": "marta.rios@empresa.com", "rol": "despacho"}`
 
 Los roles válidos se configuran en el archivo .env (`ROLES=administrador,despacho,flota`).
+
+Proyecto versionado con Git y publicado en GitHub
