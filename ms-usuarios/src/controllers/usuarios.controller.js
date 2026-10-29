@@ -35,4 +35,10 @@ async function actualizar(req, res) {
   res.status(200).json(actualizado);
 }
 
-module.exports = { listar, obtener, crear, actualizar };
+// DELETE /usuarios/:id
+async function eliminar(req, res) {
+  await service.eliminar(leerId(req));
+  res.status(204).end();                  // 204 No Content: éxito, sin cuerpo
+}
+
+module.exports = { listar, obtener, crear, actualizar, eliminar };

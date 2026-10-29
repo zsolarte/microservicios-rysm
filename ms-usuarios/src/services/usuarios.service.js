@@ -42,4 +42,9 @@ async function actualizar(id, datos) {
   return actualizado;
 }
 
-module.exports = { listar, obtener, crear, actualizar };
+async function eliminar(id) {
+  const eliminado = await repo.remove(id);
+  if (!eliminado) throw new HttpError(404, `No existe el usuario con id ${id}`);
+}
+
+module.exports = { listar, obtener, crear, actualizar, eliminar };

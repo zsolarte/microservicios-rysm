@@ -38,5 +38,11 @@ async function update(id, usuario) {
   return usuarios[posicion];
 }
 
+async function remove(id) {
+  const posicion = usuarios.findIndex((u) => u.id === id);
+  if (posicion === -1) return false;
+  usuarios.splice(posicion, 1);
+  return true;
+}
 
-module.exports = { findAll, findById, findByEmail, create, update };
+module.exports = { findAll, findById, findByEmail, create, update, remove };
