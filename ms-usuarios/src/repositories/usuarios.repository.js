@@ -6,46 +6,60 @@
 // Todas las funciones son async (devuelven promesas) para que el cambio
 // a una base de datos real no obligue a modificar la capa de servicio.
 // =====================================================================
-const usuarios = [
-  { id: 1, nombre: 'Administrador General', email: 'admin@empresa.com', rol: 'administrador', activo: true },
-  { id: 2, nombre: 'Laura Gómez', email: 'laura.gomez@empresa.com', rol: 'administrador', activo: true },
-  { id: 3, nombre: 'Andrés Castillo', email: 'andres.castillo@empresa.com', rol: 'administrador', activo: false },
-];
-let siguienteId = 4;
+// src/repositories/usuarios.repository.js — versión MySQL
+const pool = require('../db');
 
-// Filtros: ?rol=despacho y ?ids=1,3 (en el Taller 2 se vuelve un WHERE de MySQL)
+// MySQL guarda BOOLEAN como 0/1: el repositorio lo traduce al formato del contrato
+function aUsuario(fila) {
+  return { ...fila, activo: Boolean(fila.activo) };
+}
+
 async function findAll(filtros = {}) {
-  return usuarios.filter((u) =>
-    (!filtros.rol || u.rol === filtros.rol) &&
-    (!filtros.ids || filtros.ids.includes(u.id)));
+  let sql = 'SELECT * FROM usuarios';
+  const condiciones = [];
+  const valores = [];
+  if (filtros.rol) {
+    condiciones.push('rol = ?');
+    valores.push(filtros.rol);
+  }
+  if (filtros.ids) {                       // ?ids=1,2,3 → WHERE id IN (1, 2, 3)
+    condiciones.push('id IN (?)');
+    valores.push(filtros.ids);
+  }
+  if (condiciones.length > 0) sql += ' WHERE ' + condiciones.join(' AND ');
+  const [filas] = await pool.query(sql + ' ORDER BY id', valores);
+  return filas.map(aUsuario);
 }
 
 async function findById(id) {
-  return usuarios.find((u) => u.id === id) || null;
+  // ? es un parámetro: el valor viaja aparte de la consulta (evita inyección SQL)
+  const [filas] = await pool.query('SELECT * FROM usuarios WHERE id = ?', [id]);
+  return filas.length > 0 ? aUsuario(filas[0]) : null;
 }
 
 async function findByEmail(email) {
-  return usuarios.find((u) => u.email === email) || null;
+  const [filas] = await pool.query('SELECT * FROM usuarios WHERE email = ?', [email]);
+  return filas.length > 0 ? aUsuario(filas[0]) : null;
 }
 
 async function create(usuario) {
-  const nuevo = { id: siguienteId++, ...usuario };
-  usuarios.push(nuevo);
-  return nuevo;
+  const [resultado] = await pool.query(
+    'INSERT INTO usuarios (nombre, email, rol, activo) VALUES (?, ?, ?, ?)',
+    [usuario.nombre, usuario.email, usuario.rol, usuario.activo]);
+  return findById(resultado.insertId);     // MySQL devuelve el id generado
 }
 
 async function update(id, usuario) {
-  const posicion = usuarios.findIndex((u) => u.id === id);
-  if (posicion === -1) return null;          // no existe: el repositorio solo avisa
-  usuarios[posicion] = { id, ...usuario };
-  return usuarios[posicion];
+  const [resultado] = await pool.query(
+    'UPDATE usuarios SET nombre = ?, email = ?, rol = ?, activo = ? WHERE id = ?',
+    [usuario.nombre, usuario.email, usuario.rol, usuario.activo, id]);
+  if (resultado.affectedRows === 0) return null;
+  return findById(id);
 }
 
 async function remove(id) {
-  const posicion = usuarios.findIndex((u) => u.id === id);
-  if (posicion === -1) return false;
-  usuarios.splice(posicion, 1);
-  return true;
+  const [resultado] = await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
+  return resultado.affectedRows > 0;
 }
 
 module.exports = { findAll, findById, findByEmail, create, update, remove };
