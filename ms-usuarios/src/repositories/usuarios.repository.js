@@ -13,8 +13,11 @@ const usuarios = [
 ];
 let siguienteId = 4;
 
-async function findAll() {
-  return usuarios;
+// Filtros: ?rol=despacho y ?ids=1,3 (en el Taller 2 se vuelve un WHERE de MySQL)
+async function findAll(filtros = {}) {
+  return usuarios.filter((u) =>
+    (!filtros.rol || u.rol === filtros.rol) &&
+    (!filtros.ids || filtros.ids.includes(u.id)));
 }
 
 async function findById(id) {

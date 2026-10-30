@@ -7,8 +7,8 @@ const repo = require('../repositories/usuarios.repository');
 const { validarUsuario, construirUsuario } = require('../models/usuario');
 const HttpError = require('../utils/http-error');
 
-async function listar() {
-  return repo.findAll();
+async function listar(filtros) {
+  return repo.findAll(filtros);
 }
 
 async function obtener(id) {

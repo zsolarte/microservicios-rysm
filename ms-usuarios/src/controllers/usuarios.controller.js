@@ -13,8 +13,16 @@ function leerId(req) {
 }
 
 // GET /usuarios
+// GET /usuarios, GET /usuarios?rol=despacho, GET /usuarios?ids=1,3
 async function listar(req, res) {
-  const usuarios = await service.listar();
+  const filtros = { rol: req.query.rol };
+  if (req.query.ids) {                    // ?ids=1,3 → [1, 3]
+    filtros.ids = String(req.query.ids).split(',').map(Number);
+    if (filtros.ids.some((id) => !Number.isInteger(id) || id <= 0)) {
+      throw new HttpError(400, 'ids debe ser una lista de enteros separados por comas');
+    }
+  }
+  const usuarios = await service.listar(filtros);
   res.status(200).json(usuarios);
 }
 
