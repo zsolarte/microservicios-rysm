@@ -1,0 +1,312 @@
+{
+  "info": {
+    "name": "ms-prestamos",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base",
+      "value": "http://localhost:3003"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 · Listar todos → 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base}}/prestamos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 · Filtrar por estado → 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base}}/prestamos?estado=activo"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 · Obtener existente → 200",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base}}/prestamos/1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 · Obtener inexistente → 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base}}/prestamos/99"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 · Obtener con id no numérico → 400",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{base}}/prestamos/abc"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 400\", function () { pm.expect(pm.response.code).to.be.oneOf([400]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 · Crear válido → 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/prestamos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"libro_id\": 3,\n  \"lector\": \"Sofía Mejía\",\n  \"fecha_prestamo\": \"2026-11-03\",\n  \"fecha_devolucion\": \"2026-11-17\",\n  \"estado\": \"activo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 201\", function () { pm.expect(pm.response.code).to.be.oneOf([201]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 · Crear sin datos obligatorios → 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/prestamos",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 400\", function () { pm.expect(pm.response.code).to.be.oneOf([400]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "08 · Crear con devolución antes del préstamo → 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/prestamos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"libro_id\": 3,\n  \"lector\": \"Sofía Mejía\",\n  \"fecha_prestamo\": \"2026-11-17\",\n  \"fecha_devolucion\": \"2026-11-03\",\n  \"estado\": \"activo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 400\", function () { pm.expect(pm.response.code).to.be.oneOf([400]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "09 · Actualizar existente → 200",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/prestamos/1",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"libro_id\": 1,\n  \"lector\": \"Camila Torres\",\n  \"fecha_prestamo\": \"2026-10-20\",\n  \"fecha_devolucion\": \"2026-11-03\",\n  \"estado\": \"devuelto\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 200\", function () { pm.expect(pm.response.code).to.be.oneOf([200]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "10 · Actualizar inexistente → 404",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base}}/prestamos/99",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"libro_id\": 1,\n  \"lector\": \"X\",\n  \"fecha_prestamo\": \"2026-10-20\",\n  \"fecha_devolucion\": \"2026-11-03\",\n  \"estado\": \"activo\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 · Eliminar existente → 204",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base}}/prestamos/2"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 204\", function () { pm.expect(pm.response.code).to.be.oneOf([204]); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "12 · Eliminar otra vez → 404",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": "{{base}}/prestamos/2"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Responde 404\", function () { pm.expect(pm.response.code).to.be.oneOf([404]); });"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
