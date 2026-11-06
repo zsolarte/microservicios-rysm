@@ -28,4 +28,14 @@ async function existeLibro(id, token) {
   return true;
 }
 
-module.exports = { existeLibro };
+// COMPOSICIÓN: varios libros en UNA petición → Map id → libro (null si no responde)
+async function librosPorIds(ids, token) {
+  if (ids.length === 0) return new Map();
+  const respuesta = await pedir(`/libros?ids=${ids.join(',')}`, token);
+  if (!respuesta || !respuesta.ok) return null;
+  const libros = await respuesta.json();
+  return new Map(libros.map((l) =>
+    [l.id, { id: l.id, titulo: l.titulo, autor: l.autor }]));
+}
+
+module.exports = { existeLibro, librosPorIds };

@@ -10,11 +10,11 @@ function leerId(req) {
 
 // GET /prestamos, GET /prestamos?estado=activo
 async function listar(req, res) {
-  res.status(200).json(await service.listar({ estado: req.query.estado }));
+  res.status(200).json(await service.listar({ estado: req.query.estado}, req.headers.authorization));
 }
 
 async function obtener(req, res) {
-  res.status(200).json(await service.obtener(leerId(req)));
+  res.status(200).json(await service.obtener(leerId(req), req.headers.authorization));
 }
 
 async function crear(req, res) {

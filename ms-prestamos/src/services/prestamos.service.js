@@ -19,14 +19,27 @@ function validarFechas(prestamo) {
   }
 }
 
-async function listar(filtros) {
-  return repo.findAll(filtros);
+// Agrega a cada préstamo su objeto libro, con UNA sola consulta a ms-libros
+async function componer(prestamos, token) {
+  const ids = [...new Set(prestamos.map((p) => p.libro_id))];
+  const libros = await librosClient.librosPorIds(ids, token);
+  if (!libros) {                                   // degradación controlada
+    return prestamos.map((p) =>
+      ({ ...p, libro: null, aviso: 'ms-libros no disponible' }));
+  }
+  return prestamos.map((p) => ({ ...p, libro: libros.get(p.libro_id) || null }));
 }
 
-async function obtener(id) {
+async function listar(filtros, token) {
+  return componer(await repo.findAll(filtros), token);
+}
+
+async function obtener(id, token) {
   const prestamo = await repo.findById(id);
   if (!prestamo) throw new HttpError(404, `No existe el préstamo con id ${id}`);
-  return prestamo;
+  const [compuesto] = await componer([prestamo], token);
+  return compuesto;
+  
 }
 
 async function crear(datos, token) {
@@ -35,7 +48,9 @@ async function crear(datos, token) {
   const prestamo = construirPrestamo(datos);
   validarFechas(prestamo);
   await validarLibro(prestamo.libro_id, token);
-  return repo.create(prestamo);
+  const nuevo = await repo.create(prestamo);
+  const [compuesto] = await componer([nuevo], token);    // NUEVO: agrega el libro
+  return compuesto;
 }
 
 async function actualizar(id, datos, token) {
@@ -46,7 +61,8 @@ async function actualizar(id, datos, token) {
   await validarLibro(prestamo.libro_id, token);
   const actualizado = await repo.update(id, prestamo);
   if (!actualizado) throw new HttpError(404, `No existe el préstamo con id ${id}`);
-  return actualizado;
+  const [compuesto] = await componer([actualizado], token);  // NUEVO: agrega el libro
+  return compuesto;
 }
 
 async function eliminar(id) {
