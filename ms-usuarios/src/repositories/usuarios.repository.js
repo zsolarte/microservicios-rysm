@@ -1,17 +1,14 @@
 // =====================================================================
-// CAPA DE ACCESO A DATOS (repositorio)
-// Única capa que sabe DÓNDE se guardan los datos.
-// Versión del Taller 1: datos en memoria (se pierden al reiniciar).
-// En el Taller 2 se reemplaza por MySQL SIN tocar las otras capas.
-// Todas las funciones son async (devuelven promesas) para que el cambio
-// a una base de datos real no obligue a modificar la capa de servicio.
+// CAPA DE ACCESO A DATOS (repositorio) — versión MySQL
+// Única capa que sabe dónde y cómo se guardan los datos.
 // =====================================================================
-// src/repositories/usuarios.repository.js — versión MySQL
 const pool = require('../db');
 
-// MySQL guarda BOOLEAN como 0/1: el repositorio lo traduce al formato del contrato
+// Convierte una fila de MySQL al formato del contrato:
+// quita password_hash (nunca sale del repositorio) y traduce activo 0/1 → false/true
 function aUsuario(fila) {
-  return { ...fila, activo: Boolean(fila.activo) };
+  const { password_hash, ...usuario } = fila;
+  return { ...usuario, activo: Boolean(fila.activo) };
 }
 
 async function findAll(filtros = {}) {
@@ -32,7 +29,6 @@ async function findAll(filtros = {}) {
 }
 
 async function findById(id) {
-  // ? es un parámetro: el valor viaja aparte de la consulta (evita inyección SQL)
   const [filas] = await pool.query('SELECT * FROM usuarios WHERE id = ?', [id]);
   return filas.length > 0 ? aUsuario(filas[0]) : null;
 }
@@ -42,17 +38,28 @@ async function findByEmail(email) {
   return filas.length > 0 ? aUsuario(filas[0]) : null;
 }
 
-async function create(usuario) {
-  const [resultado] = await pool.query(
-    'INSERT INTO usuarios (nombre, email, rol, activo) VALUES (?, ?, ?, ?)',
-    [usuario.nombre, usuario.email, usuario.rol, usuario.activo]);
-  return findById(resultado.insertId);     // MySQL devuelve el id generado
+// Solo para el inicio de sesión: es la única función que devuelve el hash
+async function findCredenciales(email) {
+  const [filas] = await pool.query(
+    'SELECT id, nombre, email, rol, activo, password_hash FROM usuarios WHERE email = ?', [email]);
+  return filas.length > 0 ? filas[0] : null;
 }
 
-async function update(id, usuario) {
+async function create(usuario, passwordHash) {
   const [resultado] = await pool.query(
-    'UPDATE usuarios SET nombre = ?, email = ?, rol = ?, activo = ? WHERE id = ?',
-    [usuario.nombre, usuario.email, usuario.rol, usuario.activo, id]);
+    'INSERT INTO usuarios (nombre, email, password_hash, rol, activo) VALUES (?, ?, ?, ?, ?)',
+    [usuario.nombre, usuario.email, passwordHash, usuario.rol, usuario.activo]);
+  return findById(resultado.insertId);
+}
+
+async function update(id, usuario, passwordHash) {
+  let sql = 'UPDATE usuarios SET nombre = ?, email = ?, rol = ?, activo = ?';
+  const valores = [usuario.nombre, usuario.email, usuario.rol, usuario.activo];
+  if (passwordHash) {                      // la contraseña solo cambia si se envió una nueva
+    sql += ', password_hash = ?';
+    valores.push(passwordHash);
+  }
+  const [resultado] = await pool.query(sql + ' WHERE id = ?', [...valores, id]);
   if (resultado.affectedRows === 0) return null;
   return findById(id);
 }
@@ -62,4 +69,4 @@ async function remove(id) {
   return resultado.affectedRows > 0;
 }
 
-module.exports = { findAll, findById, findByEmail, create, update, remove };
+module.exports = { findAll, findById, findByEmail, findCredenciales, create, update, remove };
