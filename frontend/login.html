@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca · Iniciar sesión</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <div class="entrada">
+    <section class="sala">
+      <div>
+        <h1>Biblioteca</h1>
+        <p>Catálogo, préstamos y usuarios de la biblioteca, en un solo lugar.</p>
+      </div>
+      <div class="estante-deco" aria-hidden="true">
+        <span style="background:#7a2e2a;height:92%">Cien años de soledad</span>
+        <span style="background:#2d4a73;height:78%">La vorágine</span>
+        <span style="background:#8a6a1f;height:64%">María</span>
+        <span style="background:#3f5f5a;height:86%">El coronel no tiene quien le escriba</span>
+        <span style="background:#5b3a5e;height:70%">La mala hora</span>
+        <span style="background:#7a2e2a;height:96%">Crónica de una muerte anunciada</span>
+        <span style="background:#2d4a73;height:74%">Delirio</span>
+        <span style="background:#8a6a1f;height:82%">El olvido que seremos</span>
+        <span style="background:#3f5f5a;height:68%">Rosario Tijeras</span>
+        <span style="background:#5b3a5e;height:90%">Los ejércitos</span>
+        <span style="background:#2d4a73;height:60%">Satanás</span>
+      </div>
+    </section>
+
+    <section class="acceso">
+      <form id="form-login" novalidate>
+        <h2>Iniciar sesión</h2>
+        <p class="indicacion">Use el email y la contraseña de su cuenta.</p>
+        <label class="campo"><span>Email</span>
+          <input name="email" type="email" autocomplete="username" required>
+        </label>
+        <label class="campo"><span>Contraseña</span>
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <button class="boton" type="submit">Entrar</button>
+        <p class="error-acceso" id="error-login" role="alert"></p>
+
+        <div class="cuentas" id="cuentas" hidden>
+          Cuentas de prueba (modo ejemplo):
+          <ul>
+            <li><button type="button" data-email="admin@empresa.com" data-password="Admin2026*">Administrador</button></li>
+            <li><button type="button" data-email="bibliotecario@biblioteca.com" data-password="Biblio2026">Bibliotecario</button></li>
+            <li><button type="button" data-email="lectora@biblioteca.com" data-password="Lectora2026">Lector</button></li>
+          </ul>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/datos-ejemplo.js"></script>
+  <script src="js/sesion.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    const form = document.getElementById('form-login');
+    const error = document.getElementById('error-login');
+
+    // Si ya hay sesión, ir directo a la página del rol
+    const yaEntro = usuarioActual();
+    if (yaEntro) location.href = PAGINA_POR_ROL[yaEntro.rol];
+
+    if (MODO === 'ejemplo') {
+      const cuentas = document.getElementById('cuentas');
+      cuentas.hidden = false;
+      cuentas.onclick = (evento) => {
+        const b = evento.target.closest('button');
+        if (!b) return;
+        form.elements.email.value = b.dataset.email;
+        form.elements.password.value = b.dataset.password;
+      };
+    }
+
+    form.onsubmit = async (evento) => {
+      evento.preventDefault();
+      error.textContent = '';
+      const email = form.elements.email.value.trim();
+      const password = form.elements.password.value;
+      if (!email || !password) {
+        error.textContent = 'Escriba el email y la contraseña.';
+        return;
+      }
+      try {
+        await iniciarSesion(email, password);
+      } catch (e) {
+        error.textContent = e.status === 401 ? 'Email o contraseña incorrectos.' : e.message;
+      }
+    };
+  </script>
+</body>
+</html>

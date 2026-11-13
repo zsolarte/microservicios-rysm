@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca · Catálogo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,500;7..72,600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <!-- Página de inicio del rol lector. La estructura es común (js/app.js);
+       cada sección del menú la dibuja el archivo de su entidad. -->
+  <header class="barra">
+    <div class="barra-superior">
+      <span class="marca">Biblioteca</span>
+      <div class="persona">
+        <span class="modo" id="modo" hidden>Datos de ejemplo</span>
+        <span><strong id="nombre-usuario"></strong> <span class="rol" id="rol-usuario"></span></span>
+        <button id="cerrar-sesion" type="button">Cerrar sesión</button>
+      </div>
+    </div>
+    <nav id="menu" aria-label="Secciones"></nav>
+  </header>
+
+  <main id="contenido"></main>
+  <div id="mensajes"></div>
+  <dialog id="dialogo"></dialog>
+
+  <script src="js/config.js"></script>
+  <script src="js/datos-ejemplo.js"></script>
+  <script src="js/sesion.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/libros.js"></script>
+  <script src="js/prestamos.js"></script>
+  <script src="js/usuarios.js"></script>
+  <script>iniciarPagina('lector');</script>
+</body>
+</html>
