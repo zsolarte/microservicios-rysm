@@ -7,6 +7,7 @@ const prestamosRoutes = require('./routes/prestamos.routes');
 
 const app = express();
 
+
 // Middleware: convierte el cuerpo JSON de la petición en un objeto (req.body)
 app.use(express.json());
 
